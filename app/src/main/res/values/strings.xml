@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">BT LED Controller</string>
+    <string name="textV1String">Red Value</string>
+    <string name="button1Text">Enable BT</string>
+    <string name="textV2String">0</string>
+    <string name="textV3String">Green Value</string>
+    <string name="textV4String">0</string>
+    <string name="textV5String">Blue Value</string>
+    <string name="textV6String">0</string>
+</resources>
