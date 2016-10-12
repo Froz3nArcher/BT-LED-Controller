@@ -26,15 +26,16 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/button1"
-        android:text="@string/button1Text" />
+        android:text="@string/button1Text"
+        android:onClick="connectBT" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/textView1"
-        android:layout_alignStart="@+id/button1"
         android:id="@+id/seekView1"
-        android:text="@string/textV2String" />
+        android:text="@string/textV2String"
+        android:layout_alignStart="@+id/button1" />
 
     <TextView
         android:text="@string/textV3String"
@@ -95,6 +96,9 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+        android:layout_below="@+id/seekBar3"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="30dp"
+        android:id="@+id/newDeviceView" />
+
 </RelativeLayout>
