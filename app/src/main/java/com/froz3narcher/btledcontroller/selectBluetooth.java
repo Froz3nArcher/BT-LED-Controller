@@ -19,17 +19,20 @@ import java.util.Set;
 
 public class selectBluetooth extends AppCompatActivity
 {
+    private BluetoothAdapter mBTAdapter;
+    private Set<BluetoothDevice> pairedDevices;
+    private ListView lv;
+
+    ArrayAdapter<String> mArrayAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-        BluetoothAdapter mBTAdapter;
-        Set<BluetoothDevice> pairedDevices;
-        final ListView lv;
-        ArrayAdapter<String> mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_bluetooth);
+
+         mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
         lv = (ListView) findViewById (R.id.newDeviceView);
 
@@ -55,23 +58,52 @@ public class selectBluetooth extends AppCompatActivity
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id)
                 {
 
-                    String selected = lv.getItemAtPosition(position).toString();
+                    String selectedBT = lv.getItemAtPosition(position).toString();
                     Intent intent = new Intent();
 
                     // Tell the caller what the result is
-                    intent.putExtra(Constants.EXTRA_MESSAGE, selected);
+                    intent.putExtra(Constants.DEVICE_RESULT, selectedBT);
                     setResult(Activity.RESULT_OK, intent);
                     finish();
                 }
             });
 
         }
+
+        registerReceiver(mBTReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+    }
+
+    public void scanButton(View view)
+    {
+        mArrayAdapter.clear();
+        mBTAdapter.startDiscovery();
     }
 
     @Override
     public void onDestroy()
     {
+        mBTAdapter.cancelDiscovery();
+        unregisterReceiver(mBTReceiver);
+
         super.onDestroy();
-        // return BT adapter?
     }
+
+    private final BroadcastReceiver mBTReceiver = new BroadcastReceiver()
+    {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            String action = intent.getAction();
+
+            // When discovery finds a device, get the object and add it to the array adapters
+            if (BluetoothDevice.ACTION_FOUND.equals(action))
+            {
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+            }
+        }
+    };
+
 }

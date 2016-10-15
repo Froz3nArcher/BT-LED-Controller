@@ -19,6 +19,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".selectBluetooth"></activity>
+            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".MainActivity"></meta-data>
     </application>
 
 </manifest>

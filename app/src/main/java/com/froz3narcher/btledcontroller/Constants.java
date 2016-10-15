@@ -9,5 +9,5 @@ public class Constants
     static final int REQUEST_ENABLE_BT = 1;
     static final int REQUEST_DEVICE_BT = 2;
 
-    static final String EXTRA_MESSAGE = "com.froz3narcher.btledcontroller.MESSAGE";
+    static final String DEVICE_RESULT = "com.froz3narcher.btledcontroller.DEVICE_RESULT";
 }

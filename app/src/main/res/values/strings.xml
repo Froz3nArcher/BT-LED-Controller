@@ -8,4 +8,5 @@
     <string name="textV4String">0</string>
     <string name="textV5String">Blue Value</string>
     <string name="textV6String">0</string>
+    <string name="scanButtonText">Scan Devices</string>
 </resources>

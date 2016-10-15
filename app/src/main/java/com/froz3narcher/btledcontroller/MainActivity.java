@@ -131,16 +131,12 @@ public class MainActivity extends AppCompatActivity
         }
         else if ((requestCode == Constants.REQUEST_DEVICE_BT) && (resultCode == Activity.RESULT_OK))
         {
-            Intent result = getIntent();
+            //Intent result = getIntent();
 
-            //Bundle extras = result.getExtras();
-
-            //String message = extras.getString(Constants.EXTRA_MESSAGE);
-            String message = (String) result.getStringExtra(Constants.EXTRA_MESSAGE);
+            String message = data.getStringExtra(Constants.DEVICE_RESULT);
 
             TextView display = (TextView) findViewById(R.id.selectedDevice);
             display.setText (message);
-            //display.setText ("Returned");
         }
     }
 
