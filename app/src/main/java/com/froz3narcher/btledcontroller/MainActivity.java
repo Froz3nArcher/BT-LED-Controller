@@ -25,15 +25,7 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity
 {
     private BluetoothAdapter mBTAdapter;
-    private Set<BluetoothDevice> pairedDevices;
-    private ListView lv;
-    private ArrayAdapter<String> mArrayAdapter; // = new ArrayAdapter<String> (this, R.layout.activity_main);
     private Button enableButton;
-
-    static final int REQUEST_ENABLE_BT = 1;
-
-    public final static String EXTRA_MESSAGE = "com.example.paul.bluetooth_led.MESSAGE";
-    public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -111,124 +103,66 @@ public class MainActivity extends AppCompatActivity
         {
             if (mBTAdapter.isEnabled())
             {
-                enableButton.setText("Connect Device");
+                enableButton.setText(getText(R.string.button1Connect));
             }
             else
             {
-                enableButton.setText("Enable BT");
+                enableButton.setText(getText(R.string.button1Text));
             }
         }
-    };
+        else
+        {
+            // If there's no Bluetooth, we can't go much farther.
+            enableButton.setEnabled(false);
+        }
+    }
+
+    @Override
+    protected void onActivityResult (int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if ((requestCode == Constants.REQUEST_ENABLE_BT) && (resultCode == Activity.RESULT_OK))
+        {
+            if (mBTAdapter.isEnabled())
+            {
+                enableButton.setText(getText(R.string.button1Connect));
+            }
+        }
+        else if ((requestCode == Constants.REQUEST_DEVICE_BT) && (resultCode == Activity.RESULT_OK))
+        {
+            Intent result = getIntent();
+
+            //Bundle extras = result.getExtras();
+
+            //String message = extras.getString(Constants.EXTRA_MESSAGE);
+            String message = (String) result.getStringExtra(Constants.EXTRA_MESSAGE);
+
+            TextView display = (TextView) findViewById(R.id.selectedDevice);
+            display.setText (message);
+            //display.setText ("Returned");
+        }
+    }
 
     // Function to connect to the Bluetooth device
     public void connectBT (View view)
     {
-
-//        Intent intent = new Intent(this, secondActivity.class);
-//        startActivity (intent);
-
-        lv = (ListView) findViewById (R.id.newDeviceView);
-
-//        mBTAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBTAdapter != null)
+        if (!mBTAdapter.isEnabled())
         {
-            if (!mBTAdapter.isEnabled())
-            {
-                Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult (enableBtIntent, REQUEST_ENABLE_BT);
-            }
-
-            // Look for paired devices, and show them to the user
-            pairedDevices = mBTAdapter.getBondedDevices();
-
-            if (pairedDevices.size() > 0)
-            {
-                // Loop through devices, displaying them
-                mArrayAdapter = new ArrayAdapter<String> (this, R.layout.activity_main);
-
-                for (BluetoothDevice device : pairedDevices)
-                {
-                    // Add name and address to array adapter and show in a ListView
-                    mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                }
-
-                lv.setAdapter (mArrayAdapter);
-                lv.setOnItemClickListener(mBTClickListener);
-
-                //ListView newDevicesListView = (ListView) findViewById (R.id.newDeviceView);
-                // register for broadcast when a device is discovered
-                IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-                this.registerReceiver(receiverBT, filter);
-
-            }
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult (enableBtIntent, Constants.REQUEST_ENABLE_BT);
         }
-
-    };
-
-    protected void onDestroy()
-    {
-        this.unregisterReceiver(receiverBT);
+        else
+        {
+            Intent intent = new Intent(this, selectBluetooth.class);
+            startActivityForResult(intent, Constants.REQUEST_DEVICE_BT);
+        }
     }
 
-    private AdapterView.OnItemClickListener mBTClickListener = new AdapterView.OnItemClickListener()
+    @Override
+    protected void onDestroy()
     {
-        public void onItemClick (AdapterView av, View v, int arg2, long arg3)
-        {
-            // Get MAC address, last 17 chars in view
-            String info = ((TextView) v).getText().toString();
-            String address = info.substring(info.length() - 17);
-
-            // Make an intent to start the next activity
-            Intent intent = new Intent();
-            intent.putExtra (EXTRA_DEVICE_ADDRESS, address);
-
-            // set result and finish activity
-            setResult (Activity.RESULT_OK, intent);
-            finish ();
-        }
-    };
-
-    private final BroadcastReceiver receiverBT = new BroadcastReceiver ()
-    {
-        @Override
-        public void onReceive (Context context, Intent intent)
-        {
-            String action = intent.getAction ();
-
-            // When discovery finds a device
-            if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Get the BT Device object from the Intent
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-
-                // If it's already paired, skip it, because it's listed already
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED) {
-                    mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
-                }
-
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals (action))
-            {
-                if (mArrayAdapter.getCount() == 0)
-                {
-                    String noDevices = "none found";
-                    mArrayAdapter.add (noDevices);
-                }
-//                // add the name and MAC address to the arrayAdapter
-//                mArrayAdapter.add (device.getName() + "\n" + device.getAddress ());
-//                mArrayAdapter.notifyDataSetChanged();
-            }
-        }
-    };
-
-//    // Register the BroacastReceiver
-//    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-//    registerReceiver (receiverBT, filter);
-
-//    @Override
-//    protected void onDestroy ()
-//    {
-//        super.onDestroy();
-//        unregisterReceiver(receiverBT);
-//    };
+        super.onDestroy();
+    }
 
 }

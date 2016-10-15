@@ -59,7 +59,8 @@
         android:id="@+id/seekBar1"
         android:layout_below="@+id/textView1"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:max="@integer/rgbMaxVal" />
 
     <SeekBar
         android:layout_width="wrap_content"
@@ -67,7 +68,8 @@
         android:id="@+id/seekBar2"
         android:layout_below="@+id/textView3"
         android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:max="@integer/rgbMaxVal" />
 
     <TextView
         android:text="@string/textV5String"
@@ -91,14 +93,16 @@
         android:layout_below="@+id/textView5"
         android:layout_alignParentStart="true"
         android:id="@+id/seekBar3"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:max="@integer/rgbMaxVal" />
 
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/seekBar3"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="30dp"
-        android:id="@+id/newDeviceView" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="87dp"
+        android:id="@+id/selectedDevice" />
 
 </RelativeLayout>
