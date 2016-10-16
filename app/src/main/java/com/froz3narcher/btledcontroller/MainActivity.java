@@ -27,6 +27,14 @@ public class MainActivity extends AppCompatActivity
     private BluetoothAdapter mBTAdapter;
     private Button enableButton;
 
+    private final Integer RED_POS = 0;
+    private final Integer GREEN_POS = 1;
+    private final Integer BLUE_POS = 2;
+
+    private boolean connected = false;
+
+    String BTMessage;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -40,6 +48,7 @@ public class MainActivity extends AppCompatActivity
             {
                 TextView viewText = (TextView) findViewById(R.id.seekView1);
                 viewText.setText("" + progress);
+                updateMessage (RED_POS, progress);
             }
 
             public void onStartTrackingTouch(SeekBar seekBar)
@@ -107,7 +116,7 @@ public class MainActivity extends AppCompatActivity
             }
             else
             {
-                enableButton.setText(getText(R.string.button1Text));
+                enableButton.setText(getText(R.string.button1Enable));
             }
         }
         else
@@ -122,22 +131,60 @@ public class MainActivity extends AppCompatActivity
     {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if ((requestCode == Constants.REQUEST_ENABLE_BT) && (resultCode == Activity.RESULT_OK))
+        switch (requestCode)
         {
-            if (mBTAdapter.isEnabled())
-            {
-                enableButton.setText(getText(R.string.button1Connect));
-            }
-        }
-        else if ((requestCode == Constants.REQUEST_DEVICE_BT) && (resultCode == Activity.RESULT_OK))
-        {
-            //Intent result = getIntent();
+            case Constants.REQUEST_ENABLE_BT:
+                if (resultCode == Activity.RESULT_OK)
+                {
+                    if (mBTAdapter.isEnabled())
+                    {
+                        enableButton.setText(getText(R.string.button1Connect));
+                    }
+                }
+                break;
 
-            String message = data.getStringExtra(Constants.DEVICE_RESULT);
+            case Constants.REQUEST_DEVICE_BT:
+                if (resultCode == Activity.RESULT_OK)
+                {
+                    connected = true;
 
-            TextView display = (TextView) findViewById(R.id.selectedDevice);
-            display.setText (message);
+                    enableButton.setText(getText(R.string.button1Disconnect));
+
+                    String message = data.getStringExtra(Constants.DEVICE_RESULT);
+
+                    // Get the last 17 characters, which are the MAC Address of the chosen
+                    // Bluetooth device
+                    String address = message.substring(message.length() - Constants.MAC_ADDRESS_SIZE);
+
+                    Intent openDevice = new Intent(this, BTConnect.class);
+                    openDevice.putExtra(Constants.MAC_ADDRESS, address);
+                    startActivity(openDevice);
+
+                    //TextView display = (TextView) findViewById(R.id.selectedDevice);
+                    //display.setText(message);
+                }
+                break;
+
+            case Constants.REQUEST_DISCONNECT:
+                if (resultCode == Activity.RESULT_OK)
+                {
+                    enableButton.setText(getText(R.string.button1Connect));
+                }
+                break;
+
+            default:
+                break;
         }
+
+    }
+
+    private void updateMessage (Integer index, int value)
+    {
+        // TODO - crap, this can't work - the startActivity call will instantiate
+        // TODO - a copy of the class, but this call expects to call from the class
+        // TODO - or an instantiation of the class. But don't know how to do that yet.
+        BTMessage = String.valueOf(index) + " " + String.valueOf(value);
+        //BTConnect.sendData (BTMessage);
     }
 
     // Function to connect to the Bluetooth device
@@ -148,10 +195,18 @@ public class MainActivity extends AppCompatActivity
             Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult (enableBtIntent, Constants.REQUEST_ENABLE_BT);
         }
-        else
+        else if (!connected)
         {
             Intent intent = new Intent(this, selectBluetooth.class);
             startActivityForResult(intent, Constants.REQUEST_DEVICE_BT);
+        }
+        else
+        {
+            // TODO - crap, this can't work - the startActivity call will instantiate
+            // TODO - a copy of the class, but this call expects to call from the class
+            // TODO - or an instantiation of the class. But don't know how to do that yet.
+            BTConnect.Disconnect();
+
         }
     }
 

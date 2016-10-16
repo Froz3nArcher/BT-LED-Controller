@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -28,9 +29,13 @@ public class selectBluetooth extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_bluetooth);
+
+        // Disable the Scan Button for now, can't get the Device Scanning to work
+        // properly yet.
+        Button scanButton = (Button) findViewById(R.id.scanButton);
+        scanButton.setEnabled(false);
 
          mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
@@ -70,7 +75,11 @@ public class selectBluetooth extends AppCompatActivity
 
         }
 
-        registerReceiver(mBTReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+        IntentFilter foundFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(mBTReceiver, foundFilter);
+
+        IntentFilter finishedFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        registerReceiver(mBTReceiver, finishedFilter);
 
     }
 
@@ -83,7 +92,11 @@ public class selectBluetooth extends AppCompatActivity
     @Override
     public void onDestroy()
     {
-        mBTAdapter.cancelDiscovery();
+        if (mBTAdapter != null)
+        {
+            mBTAdapter.cancelDiscovery();
+        }
+
         unregisterReceiver(mBTReceiver);
 
         super.onDestroy();
@@ -102,6 +115,12 @@ public class selectBluetooth extends AppCompatActivity
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+
+                mArrayAdapter.notifyDataSetChanged();
+            }
+            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+            {
+                mBTAdapter.cancelDiscovery();
             }
         }
     };

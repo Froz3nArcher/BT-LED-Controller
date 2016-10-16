@@ -1,8 +1,9 @@
 <resources>
     <string name="app_name">BT LED Controller</string>
     <string name="textV1String">Red Value</string>
-    <string name="button1Text">Enable BT</string>
+    <string name="button1Enable">Enable BT</string>
     <string name="button1Connect">Connect BT</string>
+    <string name="button1Disconnect">Disconnect</string>
     <string name="textV2String">0</string>
     <string name="textV3String">Green Value</string>
     <string name="textV4String">0</string>

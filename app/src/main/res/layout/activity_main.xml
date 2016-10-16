@@ -26,7 +26,7 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
         android:id="@+id/button1"
-        android:text="@string/button1Text"
+        android:text="@string/button1Enable"
         android:onClick="connectBT" />
 
     <TextView
