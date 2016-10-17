@@ -18,6 +18,7 @@ public class Constants
     // Prepend com.froz3narcher.btledcontroller for unique-ness. Get into the habit of
     // doing this to avoid conflict with other Android apps
     static final String DEVICE_RESULT = "com.froz3narcher.btledcontroller.DEVICE_RESULT";
+    static final String DEVICE_LIST = "com.froz3narcher.btledcontroller.DEVICE_LIST";
     static final String MAC_ADDRESS = "com.froz3narcher.btledcontroller.MAC_ADDRESS";
 
 }

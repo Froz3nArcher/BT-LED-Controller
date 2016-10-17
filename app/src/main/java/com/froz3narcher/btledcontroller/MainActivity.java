@@ -7,6 +7,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.support.annotation.ColorInt;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.ButtonBarLayout;
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity
 {
     private BluetoothAdapter mBTAdapter;
     private Button enableButton;
+    private Button disableButton;
 
     private final Integer RED_POS = 0;
     private final Integer GREEN_POS = 1;
@@ -33,7 +36,9 @@ public class MainActivity extends AppCompatActivity
 
     private boolean connected = false;
 
-    String BTMessage;
+    // member object for the Bluetooth connection
+    ConnectThread mConnectThread = null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -41,71 +46,63 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        class redListener implements SeekBar.OnSeekBarChangeListener
+        class RGBListener implements SeekBar.OnSeekBarChangeListener
         {
-
+            @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
             {
-                TextView viewText = (TextView) findViewById(R.id.seekView1);
-                viewText.setText("" + progress);
-                updateMessage (RED_POS, progress);
+                int viewId = 0;
+                int index = 0;
+                switch (seekBar.getId())
+                {
+                    case R.id.seekBar1:
+                        index = RED_POS;
+                        viewId = R.id.seekView1;
+                        break;
+                    case R.id.seekBar2:
+                        index = GREEN_POS;
+                        viewId = R.id.seekView2;
+                        break;
+                    case R.id.seekBar3:
+                        index = BLUE_POS;
+                        viewId = R.id.seekView3;
+                        break;
+                }
+
+                TextView viewText = (TextView) findViewById(viewId);
+                viewText.setText(progress);
+                //sendData(viewText.getText().toString());
             }
 
+            @Override
             public void onStartTrackingTouch(SeekBar seekBar)
             {
             }
 
+            @Override
             public void onStopTrackingTouch(SeekBar seekBar)
             {
             }
         }
 
-        class greenListener implements SeekBar.OnSeekBarChangeListener
-        {
+        // Create one listener for the three seekbars.
+        RGBListener barListener = new RGBListener ();
 
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
-            {
-                TextView viewText = (TextView) findViewById(R.id.seekView2);
-                viewText.setText("" + progress);
-            }
-
-            public void onStartTrackingTouch(SeekBar seekBar)
-            {
-            }
-
-            public void onStopTrackingTouch(SeekBar seekBar)
-            {
-            }
-        }
-
-        class blueListener implements SeekBar.OnSeekBarChangeListener
-        {
-
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser)
-            {
-                TextView viewText = (TextView) findViewById(R.id.seekView3);
-                viewText.setText("" + progress);
-            }
-
-            public void onStartTrackingTouch(SeekBar seekBar)
-            {
-            }
-
-            public void onStopTrackingTouch(SeekBar seekBar)
-            {
-            }
-        }
-
-        enableButton = (Button) findViewById(R.id.button1);
-
+        // Red Seekbar selector
         SeekBar redBar = (SeekBar) findViewById(R.id.seekBar1);
-        redBar.setOnSeekBarChangeListener(new redListener ());
+        redBar.setOnSeekBarChangeListener(barListener);
 
+        // Green seekbar selector
         SeekBar greenBar = (SeekBar) findViewById(R.id.seekBar2);
-        greenBar.setOnSeekBarChangeListener(new greenListener());
+        greenBar.setOnSeekBarChangeListener(barListener);
 
+        // Blue seekbar selector
         SeekBar blueBar = (SeekBar) findViewById(R.id.seekBar3);
-        blueBar.setOnSeekBarChangeListener(new blueListener());
+        blueBar.setOnSeekBarChangeListener(barListener);
+
+
+        // Enable/Connect button
+        enableButton = (Button) findViewById(R.id.button1);
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBTAdapter != null)
@@ -124,6 +121,39 @@ public class MainActivity extends AppCompatActivity
             // If there's no Bluetooth, we can't go much farther.
             enableButton.setEnabled(false);
         }
+
+        enableButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                if (!mBTAdapter.isEnabled())
+                {
+                    Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
+                } else if (!connected)
+                {
+                    Intent connectIntent = new Intent(MainActivity.this, selectBluetooth.class);
+                    startActivityForResult(connectIntent, Constants.REQUEST_DEVICE_BT);
+                }
+            }
+        });
+
+        // Disable button
+        disableButton = (Button) findViewById(R.id.disableButton);
+        disableButton.setBackgroundColor(Color.RED);
+        disableButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                BluetoothAdapter thisAdapter = BluetoothAdapter.getDefaultAdapter();
+                if (thisAdapter != null)
+                {
+                    thisAdapter.disable();
+                }
+            }
+        });
     }
 
     @Override
@@ -156,12 +186,11 @@ public class MainActivity extends AppCompatActivity
                     // Bluetooth device
                     String address = message.substring(message.length() - Constants.MAC_ADDRESS_SIZE);
 
-                    Intent openDevice = new Intent(this, BTConnect.class);
-                    openDevice.putExtra(Constants.MAC_ADDRESS, address);
-                    startActivity(openDevice);
+                    mConnectThread = new ConnectThread(address);
+                    mConnectThread.start();
 
-                    //TextView display = (TextView) findViewById(R.id.selectedDevice);
-                    //display.setText(message);
+                    TextView display = (TextView) findViewById(R.id.selectedDevice);
+                    display.setText(message + " " + address);
                 }
                 break;
 
@@ -178,37 +207,6 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void updateMessage (Integer index, int value)
-    {
-        // TODO - crap, this can't work - the startActivity call will instantiate
-        // TODO - a copy of the class, but this call expects to call from the class
-        // TODO - or an instantiation of the class. But don't know how to do that yet.
-        BTMessage = String.valueOf(index) + " " + String.valueOf(value);
-        //BTConnect.sendData (BTMessage);
-    }
-
-    // Function to connect to the Bluetooth device
-    public void connectBT (View view)
-    {
-        if (!mBTAdapter.isEnabled())
-        {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult (enableBtIntent, Constants.REQUEST_ENABLE_BT);
-        }
-        else if (!connected)
-        {
-            Intent intent = new Intent(this, selectBluetooth.class);
-            startActivityForResult(intent, Constants.REQUEST_DEVICE_BT);
-        }
-        else
-        {
-            // TODO - crap, this can't work - the startActivity call will instantiate
-            // TODO - a copy of the class, but this call expects to call from the class
-            // TODO - or an instantiation of the class. But don't know how to do that yet.
-            BTConnect.Disconnect();
-
-        }
-    }
 
     @Override
     protected void onDestroy()

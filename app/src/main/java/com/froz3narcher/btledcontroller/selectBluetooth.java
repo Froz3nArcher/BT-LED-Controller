@@ -36,9 +36,19 @@ public class selectBluetooth extends AppCompatActivity
         // properly yet.
         Button scanButton = (Button) findViewById(R.id.scanButton);
         scanButton.setEnabled(false);
+        scanButton.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                mArrayAdapter.clear();
+                mBTAdapter.startDiscovery();
+            }
+        });
 
          mArrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
 
+        // This will display all the paired devices
         lv = (ListView) findViewById (R.id.newDeviceView);
 
         mBTAdapter = BluetoothAdapter.getDefaultAdapter();
@@ -66,7 +76,7 @@ public class selectBluetooth extends AppCompatActivity
                     String selectedBT = lv.getItemAtPosition(position).toString();
                     Intent intent = new Intent();
 
-                    // Tell the caller what the result is
+                    // Tell the caller which device was picked
                     intent.putExtra(Constants.DEVICE_RESULT, selectedBT);
                     setResult(Activity.RESULT_OK, intent);
                     finish();
@@ -75,18 +85,14 @@ public class selectBluetooth extends AppCompatActivity
 
         }
 
-        IntentFilter foundFilter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(mBTReceiver, foundFilter);
+        // register the Broadcast receiver for the following actions.
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
 
-        IntentFilter finishedFilter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        registerReceiver(mBTReceiver, finishedFilter);
+        //registerReceiver(mBTReceiver, filter);
 
-    }
-
-    public void scanButton(View view)
-    {
-        mArrayAdapter.clear();
-        mBTAdapter.startDiscovery();
     }
 
     @Override
@@ -97,32 +103,35 @@ public class selectBluetooth extends AppCompatActivity
             mBTAdapter.cancelDiscovery();
         }
 
-        unregisterReceiver(mBTReceiver);
+        //unregisterReceiver(mBTReceiver);
 
         super.onDestroy();
     }
 
-    private final BroadcastReceiver mBTReceiver = new BroadcastReceiver()
-    {
-        @Override
-        public void onReceive(Context context, Intent intent)
-        {
-            String action = intent.getAction();
+//    private final BroadcastReceiver mBTReceiver = new BroadcastReceiver()
+//    {
+//        @Override
+//        public void onReceive(Context context, Intent intent)
+//        {
+//            String action = intent.getAction();
 
-            // When discovery finds a device, get the object and add it to the array adapters
-            if (BluetoothDevice.ACTION_FOUND.equals(action))
-            {
-                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+//            // When discovery finds a device, get the object and add it to the array adapters
+//            if (BluetoothDevice.ACTION_FOUND.equals(action))
+//            {
+//                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
+//                mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
 
-                mArrayAdapter.notifyDataSetChanged();
-            }
-            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-            {
-                mBTAdapter.cancelDiscovery();
-            }
-        }
-    };
+//                mArrayAdapter.notifyDataSetChanged();
+//            }
+//            else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
+//            {
+//                mBTAdapter.cancelDiscovery();
+//                //Intent display = new Intent(MainActivity.this, DeviceListActivity.class);
+//                display.putParcelableArrayListExtra(Constants.DEVICE_LIST, mArrayAdapter);
+
+//            }
+//        }
+//    };
 
 }
