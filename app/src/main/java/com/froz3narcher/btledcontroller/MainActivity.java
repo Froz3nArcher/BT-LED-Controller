@@ -8,6 +8,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.ColorInt;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -38,7 +40,7 @@ public class MainActivity extends AppCompatActivity
 
     // member object for the Bluetooth connection
     ConnectThread mConnectThread = null;
-
+    Handler mHandler = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -154,6 +156,24 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         });
+
+        mHandler = new Handler()
+        {
+            @Override
+            public void handleMessage (Message msg)
+            {
+                byte[] writeBuf = (byte[]) msg.obj;
+                int begin = (int) msg.arg1;
+                int end = (int) msg.arg2;
+                switch (msg.what)
+                {
+                    case 1:
+                        String writeMessage = new String(writeBuf);
+                        writeMessage = writeMessage.substring(begin, end);
+                        break;
+                }
+            }
+        };
     }
 
     @Override
@@ -186,7 +206,7 @@ public class MainActivity extends AppCompatActivity
                     // Bluetooth device
                     String address = message.substring(message.length() - Constants.MAC_ADDRESS_SIZE);
 
-                    mConnectThread = new ConnectThread(address);
+                    mConnectThread = new ConnectThread(address, mHandler);
                     mConnectThread.start();
 
                     TextView display = (TextView) findViewById(R.id.selectedDevice);

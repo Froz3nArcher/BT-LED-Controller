@@ -3,6 +3,7 @@ package com.froz3narcher.btledcontroller;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.Handler;
 
 import java.io.IOException;
 import java.util.UUID;
@@ -17,27 +18,32 @@ public class ConnectThread extends Thread
 
     private final BluetoothSocket mSocket;
     private final BluetoothDevice mDevice;
+    private final BluetoothAdapter mBTAdapter;
+    private final ConnectedThread mConnectedThread;
 
-    public ConnectThread (String address)
+    public ConnectThread (String address, Handler msgHandler)
     {
-        BluetoothAdapter mBTAdapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothDevice device = mBTAdapter.getRemoteDevice(address);
+        mBTAdapter = BluetoothAdapter.getDefaultAdapter();
+        mDevice = mBTAdapter.getRemoteDevice (address);
 
         BluetoothSocket tmp = null;
-        mDevice = device;
+
         try
         {
-            tmp = device.createRfcommSocketToServiceRecord(thisUUID);
+            tmp = mDevice.createRfcommSocketToServiceRecord(thisUUID);
         }
         catch (IOException e)
         {
         }
         mSocket = tmp;
+
+        mConnectedThread = new ConnectedThread(mSocket, msgHandler);
+        mConnectedThread.start();
     }
 
     public void run()
     {
-        BluetoothAdapter mBTAdapterh = BluetoothAdapter.getDefaultAdapter();
+        mBTAdapter.cancelDiscovery();
         try
         {
             mSocket.connect();
