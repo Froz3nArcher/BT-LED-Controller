@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/BTLEDController.iml" filepath="$PROJECT_DIR$/BTLEDController.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BT-LED-Controller.iml" filepath="$PROJECT_DIR$/BT-LED-Controller.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

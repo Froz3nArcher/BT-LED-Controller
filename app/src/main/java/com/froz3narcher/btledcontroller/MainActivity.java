@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity
                 }
 
                 TextView viewText = (TextView) findViewById(viewId);
-                viewText.setText(progress);
+                viewText.setText(String.valueOf (index) + " " + String.valueOf (progress));
                 //sendData(viewText.getText().toString());
             }
 
