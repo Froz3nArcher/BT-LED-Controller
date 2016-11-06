@@ -18,7 +18,7 @@ public class ConnectedThread extends Thread
     private final OutputStream mOutStream;
     private final Handler mHandler;
 
-    public ConnectedThread (BluetoothSocket socket, Handler msgHandler)
+    public ConnectedThread(BluetoothSocket socket, Handler msgHandler)
     {
         mSocket = socket;
         mHandler = msgHandler;
@@ -30,8 +30,7 @@ public class ConnectedThread extends Thread
         {
             tmpIn = socket.getInputStream();
             tmpOut = socket.getOutputStream();
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
         }
 
@@ -49,20 +48,19 @@ public class ConnectedThread extends Thread
         {
             try
             {
-                bytes += mInStream.read(buffer, bytes, buffer.length - bytes);
-                for (int i = begin; i < bytes; i++)
-                {
-                    if (buffer[i] == "#".getBytes()[0])
-                    {
-                        mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();
-                        begin = i + 1;
-                        if (i == bytes - 1)
-                        {
-                            bytes = 0;
-                            begin = 0;
-                        }
-                    }
-                }
+                bytes = mInStream.read(buffer);
+
+                mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+//                bytes += mInStream.read(buffer, bytes, buffer.length - bytes);
+//                for (int i = begin; i < bytes; i++) {
+//                    if (buffer[i] == "#".getBytes()[0]) {
+//                        mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();
+//                        begin = i + 1;
+//                        if (i == bytes - 1) {
+//                            bytes = 0;
+//                            begin = 0;
+//                        }
+//                    }
             } catch (IOException e)
             {
                 break;
@@ -75,10 +73,9 @@ public class ConnectedThread extends Thread
         try
         {
             mOutStream.write(bytes);
-        }
-        catch (IOException e)
+            mOutStream.flush();
+        } catch (IOException e)
         {
-
         }
     }
 
@@ -88,10 +85,8 @@ public class ConnectedThread extends Thread
         try
         {
             mSocket.close();
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
-
         }
     }
 

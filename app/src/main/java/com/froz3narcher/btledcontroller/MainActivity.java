@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity
 
     private boolean connected = false;
 
+    private byte[] message = new byte[6];
+
     // member object for the Bluetooth connection
     ConnectThread mConnectThread = null;
     Handler mHandler = null;
@@ -60,19 +62,28 @@ public class MainActivity extends AppCompatActivity
                     case R.id.seekBar1:
                         index = RED_POS;
                         viewId = R.id.seekView1;
+                        message [index] = 'R';
                         break;
                     case R.id.seekBar2:
                         index = GREEN_POS;
                         viewId = R.id.seekView2;
+                        message [index] = 'G';
                         break;
                     case R.id.seekBar3:
                         index = BLUE_POS;
                         viewId = R.id.seekView3;
+                        message [index] = 'B';
                         break;
                 }
 
                 TextView viewText = (TextView) findViewById(viewId);
                 viewText.setText(String.valueOf (index) + " " + String.valueOf (progress));
+                message [index + 1] = (byte) progress;
+
+                //if (mConnectThread != null)
+                //{
+                //    mConnectThread.sendData (message);
+                //}
                 //sendData(viewText.getText().toString());
             }
 
@@ -84,6 +95,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onStopTrackingTouch(SeekBar seekBar)
             {
+                String tempMsg = new String ("hello\n");
+                mConnectThread.sendData(tempMsg.getBytes());
             }
         }
 
@@ -217,6 +230,7 @@ public class MainActivity extends AppCompatActivity
             case Constants.REQUEST_DISCONNECT:
                 if (resultCode == Activity.RESULT_OK)
                 {
+                    mConnectThread.cancel();
                     enableButton.setText(getText(R.string.button1Connect));
                 }
                 break;
@@ -231,6 +245,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy()
     {
+        mConnectThread.cancel();
         super.onDestroy();
     }
 

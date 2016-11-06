@@ -18,8 +18,7 @@ import android.widget.TextView;
 
 import java.util.Set;
 
-public class selectBluetooth extends AppCompatActivity
-{
+public class selectBluetooth extends AppCompatActivity {
     private BluetoothAdapter mBTAdapter;
     private Set<BluetoothDevice> pairedDevices;
     private ListView lv;
@@ -27,8 +26,7 @@ public class selectBluetooth extends AppCompatActivity
     ArrayAdapter<String> mArrayAdapter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_bluetooth);
 
@@ -36,11 +34,9 @@ public class selectBluetooth extends AppCompatActivity
         // properly yet.
         Button scanButton = (Button) findViewById(R.id.scanButton);
         scanButton.setEnabled(false);
-        scanButton.setOnClickListener(new View.OnClickListener()
-        {
+        scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v)
-            {
+            public void onClick(View v) {
                 mArrayAdapter.clear();
                 mBTAdapter.startDiscovery();
             }
@@ -57,11 +53,9 @@ public class selectBluetooth extends AppCompatActivity
         // Look for paired devices, and show them to the user
         pairedDevices = mBTAdapter.getBondedDevices();
 
-        if (pairedDevices.size() > 0)
-        {
+        if (pairedDevices.size() > 0) {
             // Loop through devices, displaying them
-            for (BluetoothDevice device : pairedDevices)
-            {
+            for (BluetoothDevice device : pairedDevices) {
                 // Add name and address to array adapter and show in a ListView
                 mArrayAdapter.add(device.getName() + "\n" + device.getAddress());
             }
@@ -96,10 +90,8 @@ public class selectBluetooth extends AppCompatActivity
     }
 
     @Override
-    public void onDestroy()
-    {
-        if (mBTAdapter != null)
-        {
+    public void onDestroy() {
+        if (mBTAdapter != null) {
             mBTAdapter.cancelDiscovery();
         }
 
