@@ -3,11 +3,13 @@ package com.froz3narcher.btledcontroller;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.ColorInt;
@@ -23,11 +25,15 @@ import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.io.IOException;
 import java.util.Set;
+import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity
 {
+    static private final UUID myUUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private BluetoothAdapter mBTAdapter;
     private Button enableButton;
     private Button disableButton;
@@ -38,7 +44,7 @@ public class MainActivity extends AppCompatActivity
 
     private boolean connected = false;
 
-    private byte[] message = new byte[6];
+    private int [] RGBColors = {0, 0, 0};
 
     // member object for the Bluetooth connection
     ConnectThread mConnectThread = null;
@@ -62,29 +68,22 @@ public class MainActivity extends AppCompatActivity
                     case R.id.seekBar1:
                         index = RED_POS;
                         viewId = R.id.seekView1;
-                        message [index] = 'R';
                         break;
                     case R.id.seekBar2:
                         index = GREEN_POS;
                         viewId = R.id.seekView2;
-                        message [index] = 'G';
                         break;
                     case R.id.seekBar3:
                         index = BLUE_POS;
                         viewId = R.id.seekView3;
-                        message [index] = 'B';
                         break;
                 }
 
-                TextView viewText = (TextView) findViewById(viewId);
-                viewText.setText(String.valueOf (index) + " " + String.valueOf (progress));
-                message [index + 1] = (byte) progress;
+                RGBColors [index] = progress;
 
-                //if (mConnectThread != null)
-                //{
-                //    mConnectThread.sendData (message);
-                //}
-                //sendData(viewText.getText().toString());
+                // Visual confirmation on the phone that the value is changed
+                TextView viewText = (TextView) findViewById(viewId);
+                viewText.setText(String.valueOf (progress));
             }
 
             @Override
@@ -95,8 +94,8 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onStopTrackingTouch(SeekBar seekBar)
             {
-                String tempMsg = new String ("hello\n");
-                mConnectThread.sendData(tempMsg.getBytes());
+                String message = RGBColors[0] + "," + RGBColors[1] + "," + RGBColors[2];
+                mConnectThread.sendData(message.getBytes());
             }
         }
 
@@ -248,5 +247,4 @@ public class MainActivity extends AppCompatActivity
         mConnectThread.cancel();
         super.onDestroy();
     }
-
 }
