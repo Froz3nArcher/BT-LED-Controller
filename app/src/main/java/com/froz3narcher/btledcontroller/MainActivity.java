@@ -145,10 +145,18 @@ public class MainActivity extends AppCompatActivity
                 {
                     Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                     startActivityForResult(enableBtIntent, Constants.REQUEST_ENABLE_BT);
-                } else if (!connected)
+                }
+                else if (!connected)
                 {
                     Intent connectIntent = new Intent(MainActivity.this, selectBluetooth.class);
                     startActivityForResult(connectIntent, Constants.REQUEST_DEVICE_BT);
+                }
+                else if (connected)
+                {
+                    mConnectThread.cancel();
+                    mConnectThread = null;
+                    connected = false;
+                    enableButton.setText(getText(R.string.button1Connect));
                 }
             }
         });
@@ -179,9 +187,11 @@ public class MainActivity extends AppCompatActivity
                 int end = (int) msg.arg2;
                 switch (msg.what)
                 {
-                    case 1:
+                    case Constants.MESSAGE_READ:
                         String writeMessage = new String(writeBuf);
                         writeMessage = writeMessage.substring(begin, end);
+                        TextView display = (TextView) findViewById(R.id.selectedDevice);
+                        display.setText(writeMessage);
                         break;
                 }
             }
@@ -230,6 +240,8 @@ public class MainActivity extends AppCompatActivity
                 if (resultCode == Activity.RESULT_OK)
                 {
                     mConnectThread.cancel();
+                    mConnectThread = null;
+                    connected = false;
                     enableButton.setText(getText(R.string.button1Connect));
                 }
                 break;
@@ -244,7 +256,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onDestroy()
     {
-        mConnectThread.cancel();
+        if (mConnectThread != null)
+        {
+            mConnectThread.cancel();
+        }
         super.onDestroy();
     }
 }

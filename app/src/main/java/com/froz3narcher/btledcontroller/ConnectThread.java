@@ -23,7 +23,7 @@ public class ConnectThread extends Thread
     private final BluetoothSocket mSocket;
     private final BluetoothDevice mDevice;
     private final BluetoothAdapter mBTAdapter;
-    //private ConnectedThread mConnectedThread;
+    private ConnectedThread mConnectedThread;
     private final Handler messageHandler;
 
     public ConnectThread(String address, Handler msgHandler)
@@ -60,15 +60,15 @@ public class ConnectThread extends Thread
             return;
         }
 
-//        mConnectedThread = new ConnectedThread(mSocket, messageHandler);
-//        mConnectedThread.start();
+        mConnectedThread = new ConnectedThread(mSocket, messageHandler);
+        mConnectedThread.start();
     }
 
     public void cancel()
     {
+        mConnectedThread.cancel();
         try
         {
-            //mConnectedThread.cancel();
             mSocket.close();
         } catch (IOException e)
         {
@@ -77,13 +77,6 @@ public class ConnectThread extends Thread
 
     public void sendData(byte[] data)
     {
-        //mConnectedThread.write(data);
-        try
-        {
-            mSocket.getOutputStream().write(data);
-        } catch (IOException e)
-        {
-            mBTAdapter.getAddress();
-        }
+        mConnectedThread.write(data);
     }
 }
