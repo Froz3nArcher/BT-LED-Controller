@@ -44,23 +44,28 @@ public class ConnectedThread extends Thread
         int begin = 0;
         int bytes = 0;
 
+        byte linefeed = "\n".getBytes()[0];
+
         while (true)
         {
             try
             {
-                bytes = mInStream.read(buffer);
-
-                mHandler.obtainMessage(Constants.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
-//                bytes += mInStream.read(buffer, bytes, buffer.length - bytes);
-//                for (int i = begin; i < bytes; i++) {
-//                    if (buffer[i] == "#".getBytes()[0]) {
-//                        mHandler.obtainMessage(1, begin, i, buffer).sendToTarget();
-//                        begin = i + 1;
-//                        if (i == bytes - 1) {
-//                            bytes = 0;
-//                            begin = 0;
-//                        }
-//                    }
+                // gather up the message until a newline is reached (linefeed)
+                // send the whole message in case I want the newline, too
+                bytes += mInStream.read(buffer, bytes, buffer.length - bytes);
+                for (int i = begin; i < bytes; i++)
+                {
+                    if (buffer[i] == linefeed) // "\n".getBytes()[0])
+                    {
+                        mHandler.obtainMessage(Constants.MESSAGE_READ, begin, i, buffer).sendToTarget();
+                        begin = i + 1;
+                        if (i == bytes - 1)
+                        {
+                            bytes = 0;
+                            begin = 0;
+                        }
+                    }
+                }
             } catch (IOException e)
             {
                 break;
@@ -82,6 +87,20 @@ public class ConnectedThread extends Thread
 
     public void cancel()
     {
+        try
+        {
+            mOutStream.close();
+        } catch (IOException e)
+        {
+        }
+
+        try
+        {
+            mInStream.close();
+        } catch (IOException e)
+        {
+        }
+
         try
         {
             mSocket.close();
